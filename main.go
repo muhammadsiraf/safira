@@ -1,25 +1,21 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/muhammadfaris/safira/handlers"
 )
 
 func main() {
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("Hello World")
-		d, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(rw, "Sorry", http.StatusBadRequest)
-			return
-		}
-		log.Printf("Data from request %s", d)
-	})
+	l := log.New(os.Stdout, "safira-api", log.LstdFlags)
+	newHello := handlers.NewHello(l)
+	newBye := handlers.NewBye(l)
 
-	http.HandleFunc("/goodbye", func(http.ResponseWriter, *http.Request) {
-		log.Println("Goodbye World")
-	})
+	sm := http.NewServeMux()
+	sm.Handle("/", newHello)
+	sm.Handle("/goodbye", newBye)
 
-	http.ListenAndServe(":9090", nil)
+	http.ListenAndServe(":9090", sm)
 }
